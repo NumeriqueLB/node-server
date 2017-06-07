@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		html {
+		font-size: 15px;
+		font-family: 'Fjalla One', sans-serif;
+		background-color: #F39334;
+		}
+
+		body {
+		width: 600px;
+		margin: 0 auto;
+		background-color: #FFFFFF;
+		padding: 0 20px 20px 20px;
+		border: 5px solid black;
+		}
+
+		h1 {
+		margin: 0;
+		padding: 20px 0;
+		color:  #3493F3;
+		text-shadow: 3px 3px 1px black;
+		font-size: 60px;
+		text-align: center;
+		}
+		</style>
+	<link href='https://fonts.googleapis.com/css?family=Fjalla+One|Inconsolata" rel="stylesheet' rel='stylesheet' type='text/css'>
+	<meta charset='utf-8'>
+	<title>Online C Compiler</title>
+</head>
+<body>
+	<h1>Online C Compiler</h1>
+	<textarea id="code" style="width:600px;height:200px"></textarea><br>
+	<button onclick="sendCode()">Submit</button>
+	<hr>
+	<p>Success: <strong id="errors">waiting for code submission...</strong></p>
+	<textarea id="result" style="width:600px;height:200px"></textarea>
+</body>
+<script type="text/javascript">
+//The objective of this javascript is to send the C code to the server and then recieve it back, and display it on the webpage.
+
+	function sendCode() {
+		//This line creates a new XMLHttpRequest object called req
+		var req = new XMLHttpRequest();
+
+		//XMLHttpRequest.onreadystatechange is an event. Setting that event to an inline function
+		//
+		req.onreadystatechange = function() {
+			if (req.readyState == XMLHttpRequest.DONE) {
+				//JSON.parse converts a json string into javascript object
+				var result = JSON.parse(req.responseText);
+				if (result) {
+					document.getElementById("errors").innerHTML = (!result.result.errors).toString();
+					document.getElementById("result").value = result.result.output;
+				}
+			}
+		}
+
+		//To communicate with the node.js backend you need to send a POST request to http://<ip>:port/compile/c
+		//the body needs to be raw json, meaning that you cant use a regular HTML form.
+		req.open("POST", window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/compile/c", true);
+		req.setRequestHeader("Content-Type", "application/json"); //this doesnt need to be set, but is good practice
+
+		//XMLHttpRequest.send(JSON.stringify()) is how you send the raw json
+		//the code json property should contain the C code.
+		//the language is there in-case we want to add further support for more languages later,
+		//but is not currently used.
+		console.log(req.send(JSON.stringify({
+			code: document.getElementById("code").value,
+			language: "c"
+		})));
+	}
+</script>
+</html>
